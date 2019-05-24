@@ -3,6 +3,153 @@
 #include <unistd.h>
 #include <math.h>
 #include "reuzenrad.h"
+#include "InitJPG.h"
+
+//VARIABELEN
+//visualisatie:
+GLint winWidth = 500, winHeight = 500;
+GLdouble aspectratio; //= winWidth/winHeight
+GLdouble xlens=20, ylens=8, zlens=20;
+float cameraHoek = 40;
+float xmin = -25, xmax = 25;
+float ymin = -30, ymax = 20;
+float near = 1, far = 200;
+char projectie;
+int toonmesh = 0;
+int meerdere = 0;
+int mist = 0;
+int doorzichtig = 0;
+int assenkruis = 0;
+int controlepunten = 0;
+int textuur = 0;
+
+int tooninfo = 0;
+int toonlamp = 0;
+int smooth = 1; //controlekarakter
+
+//afmetingen:
+  //as:
+  float centraleAsStraal = 0.5;
+  float centraleAsLengte = 10.0;
+  //schijven:
+  float schijfafstand = 8.0;
+  float schijfStraal = 10.0;
+  float schijfDikte = 1.0;
+  //spaken:
+  int aantalSpaken = 10;
+  float spaakDikte = 0.25;  //lengte i.f.v. schijfStraal
+  //steunbalken:
+  float steunBalkDikte = 0.75;
+  float steunBalkLengte = 18.0;
+  //zitje
+  int aantalZitjes = 6;
+  float ophanghoogte = 6;
+  float ophangdikte = 0.25;
+  GLfloat bakpunten[6][4][3] = {
+      {{0.0, 2.0, -2.0},{0.5, 2.0, -2.0},{1.0, 3.0, -2.0},{1.5, 3.0, -1.5}},
+      {{0.0, 0.5, -1.5},{1.0, 0.5, -1.5},{1.5, 1.0, -1.5},{2.0, 3.0, -1.0}},
+      {{0.0, 0.0, -0.5},{1.0, 0.0, -0.5},{1.5, 0.5, -0.5},{2.0, 3.0, -0.5}},
+      {{0.0, 0.0,  0.5},{1.0, 0.0,  0.5},{1.5, 0.5,  0.5},{2.0, 3.0,  0.5}},
+      {{0.0, 0.5,  1.5},{1.0, 0.5,  1.5},{1.5, 1.0,  1.5},{2.0, 3.0,  1.0}},
+      {{0.0, 2.0,  2.0},{0.5, 2.0,  2.0},{1.0, 3.0,  2.0},{1.5, 3.0,  1.5}} };
+  GLfloat dakpunten[4][4][3] = {
+      {{0.0, 0.0, 2.0},{0.5, 0.0, 1.0},{1.0, 0.0, 0.0},{2.0, 0.0, 0.0}},
+      {{0.0, 0.5, 1.0},{0.5, 0.5, 1.0},{1.0, 0.5, 0.0},{2.0, 0.5, 0.0}},
+      {{0.0, 1.0, 0.0},{0.5, 1.0, 0.0},{0.8, 0.8, 0.0},{1.6, 0.8, 0.0}},
+      {{0.0, 2.0, 0.0},{0.5, 2.0, 0.0},{0.8, 1.6, 0.0},{1.3, 1.3, 0.0}} };
+  GLfloat dakknopen[8] = {0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 1.0};
+
+//animatie
+int draai = 0;
+int wiebel = 0;
+int tijd = 10; //ms
+float animhoek = 0;
+float wiebelhoek = 0;
+float wiebeldelta = 0.4;
+
+//verlichting:
+  float spothoek = 60;
+  float spotexponent = 20;
+
+  //transparantie:
+  GLenum srcf = GL_SRC_COLOR;
+  GLenum dstf = GL_DST_COLOR;
+
+  //mist:
+  GLfloat mistkleur[] = {0.8, 0.0, 0.8, 0.3};
+
+  //lichtplaatsen:
+  GLfloat aplaats[3] = {0, 0, 20};  //ambient
+  GLfloat dplaats[3] = {20, 0, 0};  //diffuus
+  GLfloat splaats[3] = {20, 20, -20};  //specular
+  GLfloat spplaats[3] = {10, 10, 0}; //spot
+
+  //lichtkleuren:
+  GLfloat ambient[] = {1, 1, 1, 0}; //wit
+  GLfloat diffuus[] = {.10, .90, .90, 0}; //groen-blauw
+  GLfloat specular[] = {.90, .10, .10, 0};  //rood
+  GLfloat spot[] = {.95, .95, .05, 0};  //geel
+  GLfloat zwart[] = {.0, .0, .0, 1};  //zwart
+
+  //materiaalkleuren:
+  float shini = 10;
+
+  GLfloat grijsA[] = {.22, .22, .22, 1};
+  GLfloat grijsD[] = {.33, .33, .33, 1};
+  GLfloat grijsS[] = {.11, .11, .11, 1};
+
+  GLfloat witachtigA[] = {.66, .66, .66, 1};
+  GLfloat witachtigD[] = {.77, .77, .77, 1};
+  GLfloat witachtigS[] = {.55, .55, .55, 1};
+
+  GLfloat chroomA[] = {.46, .58, .35, 1};
+  GLfloat chroomD[] = {.23, .29, .17, 1};
+  GLfloat chroomS[] = {.69, .87, .52, 1};
+
+  GLfloat bronsA[] = {.21, .13, .10, 1};
+  GLfloat bronsD[] = {.39, .27, .17, 1};
+  GLfloat bronsS[] = {.71, .43, .18, 1};
+
+  GLfloat geelA[] = {.65, .55, .15, 1};
+  GLfloat geelD[] = {.75, .45, .15, 1};
+  GLfloat geelS[] = {.85, .35, .15, 1};
+
+  GLfloat lilaA[] = {.45, .15, .75, 1};
+  GLfloat lilaD[] = {.55, .15, .65, 1};
+  GLfloat lilaS[] = {.35, .15, .85, 1};
+
+  GLfloat zitjeA[] = {0, 0, 0, 1};
+  GLfloat zitjeD[] = {0, 0, 0, 1};
+  GLfloat zitjeS[] = {0, 0, 0, 1};
+
+  GLfloat stangenA[] = {0, 0, 0, 1};
+  GLfloat stangenD[] = {0, 0, 0, 1};
+  GLfloat stangenS[] = {0, 0, 0, 1};
+
+  GLfloat dakA[] = {0, 0, 0, 1};
+  GLfloat dakD[] = {0, 0, 0, 1};
+  GLfloat dakS[] = {0, 0, 0, 1};
+
+  GLfloat steunbalkA[] = {0.2, 0.1, 0.1, 1};
+  GLfloat steunbalkD[] = {0.1, 0.2, 0.1, 1};
+  GLfloat steunbalkS[] = {0.1, 0.1, 0.2, 1};
+
+  GLfloat asA[] = {0.1, 0.4, 0.1, 1};
+  GLfloat asD[] = {0.1, 0.4, 0.1, 1};
+  GLfloat asS[] = {0.1, 0.4, 0.1, 1};
+
+  GLfloat spaakA[] = {0.4, 0.1, 0.1, 1};
+  GLfloat spaakD[] = {0.4, 0.1, 0.1, 1};
+  GLfloat spaakS[] = {0.4, 0.1, 0.1, 1};
+
+  GLfloat schijfA[] = {0.1, 0.1, 0.4, 1};
+  GLfloat schijfD[] = {0.1, 0.1, 0.4, .4};
+  GLfloat schijfS[] = {0.1, 0.1, 0.4, .4};
+
+	//textuur
+	GLuint textuurobject[AANTALAFBEELDINGEN];
+	char jpgnaam[AANTALAFBEELDINGEN][20] = {"kassei.jpg", "roof.jpg", "seat.jpg"};
+
 
 void kopierKleur(GLfloat dest[], GLfloat src[])
 {
@@ -57,17 +204,25 @@ void centraleAs()
 	glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, asD);
 	glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, asS);
 	glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, shini);
+
 	GLUquadricObj *cilinder;
 	cilinder = gluNewQuadric();
 	gluQuadricDrawStyle(cilinder, GLU_FILL);
 	gluCylinder(cilinder, centraleAsStraal, centraleAsStraal, centraleAsLengte, 20, 20);
+	gluDeleteQuadric(cilinder);
+
 	cilinder = gluNewQuadric();
 	gluQuadricDrawStyle(cilinder, GLU_FILL);
 	gluCylinder(cilinder, 0, centraleAsStraal, 0, 20, 20);
+	gluDeleteQuadric(cilinder);
+
 	glTranslatef(0, 0, centraleAsLengte);	//naar ander einde van de as
+
 	cilinder = gluNewQuadric();
 	gluQuadricDrawStyle(cilinder, GLU_FILL);
 	gluCylinder(cilinder, 0, centraleAsStraal, 0, 20, 20);
+	gluDeleteQuadric(cilinder);
+
 	glPopMatrix();
 }
 
@@ -86,10 +241,13 @@ void spaken()
 			glRotatef(360/aantalSpaken, 0, 0, 1);
 			glPushMatrix();
 			glRotated(90, 0, 1, 0);
+
 			GLUquadricObj *cilinder;
 			cilinder = gluNewQuadric();
 			gluQuadricDrawStyle(cilinder, GLU_FILL);
 			gluCylinder(cilinder, spaakDikte, spaakDikte, schijfStraal, 20, 20);
+			gluDeleteQuadric(cilinder);
+
 			glPopMatrix();
 		}
 		glTranslatef(0, 0, schijfafstand-schijfDikte);
@@ -117,19 +275,23 @@ void schijven()
 		cilinder = gluNewQuadric();	//buitenschijf
 		gluQuadricDrawStyle(cilinder, GLU_FILL);
 		gluCylinder(cilinder, buitenstraal, buitenstraal, schijfDikte, 20, 20);
+		gluDeleteQuadric(cilinder);
 
 		cilinder = gluNewQuadric();	//binnenschijf
 		gluQuadricDrawStyle(cilinder, GLU_FILL);
 		gluCylinder(cilinder, binnenstraal, binnenstraal, schijfDikte, 20, 20);
+		gluDeleteQuadric(cilinder);
 
 		cilinder = gluNewQuadric();	//rechterschijf
 		gluQuadricDrawStyle(cilinder, GLU_FILL);
 		gluCylinder(cilinder, buitenstraal, binnenstraal, 0, 20, 20);
+		gluDeleteQuadric(cilinder);
 
 		glTranslatef(0, 0, schijfDikte);	//ga even naar linkerschijf positie
 		cilinder = gluNewQuadric();	//linkerschijf
 		gluQuadricDrawStyle(cilinder, GLU_FILL);
 		gluCylinder(cilinder, buitenstraal, binnenstraal, 0, 20, 20);
+		gluDeleteQuadric(cilinder);
 
 		glTranslatef(0, 0, -schijfDikte);	//keer terug om volgende schijf vanuit rechts te beginnen
 		glTranslatef(0, 0, schijfafstand-schijfDikte);	//ga naar andere kant rad
@@ -218,6 +380,15 @@ void bakje()
 		glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, zitjeD);
 		glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, zitjeS);
 		glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, shini);
+
+    if(textuur)
+      glEnable(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D, textuurobject[KUIPI]);
+    glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+
+
 		glMap2f(GL_MAP2_VERTEX_3, 0, 1, 3, 4, 0, 1, 12, 6, &bakpunten[0][0][0]);
 		glEnable(GL_MAP2_VERTEX_3);
 		glMap2f(GL_MAP2_TEXTURE_COORD_2, 0, 1, 3, 4, 0, 1, 12, 6, &bakpunten[0][0][0]);
@@ -228,6 +399,8 @@ void bakje()
 			bakmesh();
 		glDisable(GL_MAP2_TEXTURE_COORD_2);
 		glDisable(GL_MAP2_VERTEX_3);
+
+    glDisable(GL_TEXTURE_2D);
 		glScalef(-1, 1, 1);
 	}
 	glPopMatrix();
@@ -243,17 +416,23 @@ void ophangstaaf()
 	glPushMatrix();
 	glTranslatef(0, 0.3, 0);
 	glRotated(-90, 1, 0, 0);
+
 	GLUquadricObj *cilinder;
 	cilinder = gluNewQuadric();
 	gluQuadricDrawStyle(cilinder, GLU_FILL);
 	gluCylinder(cilinder, ophangdikte, ophangdikte, ophanghoogte-0.3, 20, 20);
+	gluDeleteQuadric(cilinder);
+
 	glPopMatrix();
 	//horizontale staaf tussen schijven
 	glPushMatrix();
 	glTranslatef(0, ophanghoogte-ophangdikte/2, -schijfafstand/2);
+
 	cilinder = gluNewQuadric();
 	gluQuadricDrawStyle(cilinder, GLU_FILL);
 	gluCylinder(cilinder, ophangdikte, ophangdikte, schijfafstand, 20, 20);
+	gluDeleteQuadric(cilinder);
+
 	glPopMatrix();
 }
 
@@ -265,6 +444,14 @@ void dak()
 	glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, dakD);
 	glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, dakS);
 	glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, shini);
+
+  if(textuur)
+    glEnable(GL_TEXTURE_2D);
+  glBindTexture(GL_TEXTURE_2D, textuurobject[DAKI]);
+  glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+
 	for (int i=0; i<4; i++)
 	{
 
@@ -274,14 +461,17 @@ void dak()
 		GLUnurbsObj *dakelement;
 		dakelement = gluNewNurbsRenderer();
 		gluNurbsProperty(dakelement, GLU_DISPLAY_MODE, GLU_FILL);
-	//	gluNurbsProperty(dakelement, GLU_SAMPLING_TOLERANCE, 25.0);
+		gluNurbsProperty(dakelement, GLU_SAMPLING_TOLERANCE, 25.0);
 		gluBeginSurface(dakelement);
+			gluNurbsSurface(dakelement, 8, dakknopen, 8, dakknopen, 4*3, 3, &dakpunten[0][0][0], 4, 4, GL_MAP2_TEXTURE_COORD_2);
 			gluNurbsSurface(dakelement, 8, dakknopen, 8, dakknopen, 4*3, 3, &dakpunten[0][0][0], 4, 4, GL_MAP2_VERTEX_3);
 		gluEndSurface(dakelement);
+		gluDeleteNurbsRenderer(dakelement);
 		if (toonmesh)
 			dakmesh();
 		glPopMatrix();
 	}
+  glDisable(GL_TEXTURE_2D);
 	glPopMatrix();
 }
 
@@ -325,6 +515,30 @@ void rad()
 	glPopMatrix();
 }
 
+void vloer()
+{
+  glPushMatrix();
+	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, steunbalkA);
+	glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, steunbalkD);
+	glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, steunbalkS);
+	glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, shini);
+  if(textuur)
+    glEnable(GL_TEXTURE_2D);
+  glBindTexture(GL_TEXTURE_2D, textuurobject[VLOERI]);
+  glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+
+  glBegin(GL_QUADS);
+    glTexCoord2f(0.0, 0.0); glVertex3f(-10, 0, -10);
+    glTexCoord2f(1.0, 0.0); glVertex3f( 10, 0, -10);
+    glTexCoord2f(1.0, 1.0); glVertex3f( 10, 0,  10);
+    glTexCoord2f(0.0, 1.0); glVertex3f(-10, 0,  10);
+  glEnd();
+  glDisable(GL_TEXTURE_2D);
+  glPopMatrix();
+}
+
 void assen()
 {
 	if (assenkruis)
@@ -353,22 +567,39 @@ void assen()
 
 void belichting()
 {
-	glLightf(GL_LIGHT3, GL_SPOT_CUTOFF, spothoek);
-	glLightf(GL_LIGHT3, GL_SPOT_EXPONENT, spotexponent);
 
 	glLightfv(GL_LIGHT0, GL_POSITION, aplaats);
 	glLightfv(GL_LIGHT1, GL_POSITION, dplaats);
 	glLightfv(GL_LIGHT2, GL_POSITION, splaats);
 	glLightfv(GL_LIGHT3, GL_POSITION, spplaats);
+	//spot
+	GLfloat richting[] = {-1, -1, 0};
+	glLightfv(GL_LIGHT3, GL_SPOT_DIRECTION, richting);
+
+	glLightf(GL_LIGHT3, GL_SPOT_CUTOFF, spothoek);
+	glLightf(GL_LIGHT3, GL_SPOT_EXPONENT, spotexponent);
+
+	glLightf(GL_LIGHT3, GL_CONSTANT_ATTENUATION, 0.0);
+	glLightf(GL_LIGHT3, GL_LINEAR_ATTENUATION, 0.0);
+	glLightf(GL_LIGHT3, GL_QUADRATIC_ATTENUATION, 1.0);
+
 	if (toonlamp)
 	{
-		glColor3f(1, 0, 0);
+		glDisable(GL_LIGHTING);
+		glPointSize(8.0);
+		glColor3f(0.0, 1.0, 0.0);
 		glBegin(GL_POINTS);
 		glVertex3f(aplaats[0], aplaats[1], aplaats[2]);
 		glVertex3f(dplaats[0], dplaats[1], dplaats[2]);
 		glVertex3f(splaats[0], splaats[1], splaats[2]);
 		glVertex3f(spplaats[0], spplaats[1], spplaats[2]);
 		glEnd();
+		glColor3f(0.0, 0.0, 1.0);
+		glBegin(GL_LINES);
+		glVertex3fv(spplaats);
+		glVertex3f(spplaats[0]+5*richting[0], spplaats[1]+5*richting[1], spplaats[2]+5*richting[2]);
+		glEnd();
+		glEnable(GL_LIGHTING);
 	}
 }
 
@@ -399,7 +630,7 @@ void kermis()	//display functie
 		gluLookAt(xlens,ylens,zlens, 0,0,0, 0,1,0);
 
 	glEnable(GL_LIGHTING);
-	belichting();
+	belichting();	//eerst lookat, dan pas belichting zodat belichting
 
 	if (mist)
 		mistf();
@@ -407,7 +638,8 @@ void kermis()	//display functie
 	assen();
 
 	glTranslatef(0, -steunBalkLengte, 0);		//plaats de as ongeveer in het midden
-	steunBalken();
+  vloer();
+  steunBalken();
 	rad();
 	if (meerdere) {
 		glTranslatef(0.75*schijfStraal, 0, -2.5*centraleAsLengte);
@@ -460,6 +692,7 @@ void init()
 	glClearColor(0.8, 0.8, 0.8, 0.0);
 	glEnable(GL_DEPTH_TEST);
 	glLightModelfv(GL_LIGHT_MODEL_AMBIENT, zwart);	//Geen belichting zonder lampen
+
 	//Default belichting uit de lampen halen
 	glLightfv(GL_LIGHT0,GL_AMBIENT,ambient);
 	glLightfv(GL_LIGHT1,GL_AMBIENT,zwart);
@@ -475,11 +708,7 @@ void init()
 	glLightfv(GL_LIGHT3,GL_SPECULAR,spot);
 
 	glMaterialf(GL_FRONT, GL_SHININESS, 127.0);
-	//spot
-	GLfloat richting[] = {0, -1, 0};
-	glLightfv(GL_LIGHT3, GL_SPOT_DIRECTION, richting);
-	//glEnable(GL_COLOR_MATERIAL);
-	//glClearDepth(1.0);
+
 	glBlendFunc(srcf, dstf);
 
 	kopierKleur(zitjeA, grijsA);
@@ -493,6 +722,17 @@ void init()
 	kopierKleur(dakA, geelA);
 	kopierKleur(dakD, geelD);
 	kopierKleur(dakS, geelS);
+
+	tImageJPG *loadImage;
+  glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+  glGenTextures(AANTALAFBEELDINGEN, textuurobject);
+	for (int i=0; i<AANTALAFBEELDINGEN; i++)
+	{
+		loadImage = LoadJPG(jpgnaam[i]);
+		fprintf(stderr, "Afbeelding %s: %d x %d\n", jpgnaam[i], loadImage->sizeX, loadImage->sizeY);
+		glBindTexture(GL_TEXTURE_2D, textuurobject[i]);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, loadImage->sizeX, loadImage->sizeY, 0, GL_RGB, GL_UNSIGNED_BYTE, loadImage->data);
+	}
 
 	aspectratio = 1.0*winWidth/winHeight;
 }
@@ -546,12 +786,12 @@ void toets(unsigned char key, int x, int y)	//toetsen
 		printf("\n--------------------------------------------------------------\n");
 		printf("Draaien: %d, Wiebelen: %d, Mist: %d, Textuur: %d doorzichtig: %d\n", draai, wiebel, mist, textuur, doorzichtig);
 		printf("Meerder: %d, Shading: %d, Mesh: %d, Assen: %d, Controlepunten: %d\n", meerdere, smooth, toonmesh, assenkruis, controlepunten);
-		printf("Lamp 0: %d, 1: %d, 2: %d, 3: %d\n", glIsEnabled(GL_LIGHT0), glIsEnabled(GL_LIGHT1),glIsEnabled(GL_LIGHT2),glIsEnabled(GL_LIGHT3));
+		printf("Lamp 0: %d, 1: %d, 2: %d, 3: %d, Lamppunten: %d\n", glIsEnabled(GL_LIGHT0), glIsEnabled(GL_LIGHT1), glIsEnabled(GL_LIGHT2), glIsEnabled(GL_LIGHT3), toonlamp);
 		printf("Spot hoogte: %f, hoek: %f, exponent: %f\n", spplaats[1], spothoek, spotexponent);
 		printf("Shininess: %f\n", shini);
 		printf("Lens x: %f, y: %f, z: %f\n", xlens, ylens, zlens);
-		glutPostRedisplay();
 	}
+	glutPostRedisplay();
 }
 
 void anim(int delta)
@@ -647,7 +887,6 @@ int main (int argc, char* argv[])
 	init();
 	glutReshapeFunc(raam);
 	glutDisplayFunc(kermis);
-	glutKeyboardFunc(toets);
 	glutKeyboardFunc(toets);
 
 	maakMenu();
