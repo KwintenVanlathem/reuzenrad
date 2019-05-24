@@ -380,16 +380,27 @@ void bakje()
 		glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, zitjeD);
 		glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, zitjeS);
 		glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, shini);
+
+    if(textuur)
+      glEnable(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D, textuurobject[KUIPI]);
+    glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+
+
 		glMap2f(GL_MAP2_VERTEX_3, 0, 1, 3, 4, 0, 1, 12, 6, &bakpunten[0][0][0]);
 		glEnable(GL_MAP2_VERTEX_3);
-		//glMap2f(GL_MAP2_TEXTURE_COORD_2, 0, 1, 3, 4, 0, 1, 12, 6, &bakpunten[0][0][0]);
-		//glEnable(GL_MAP2_TEXTURE_COORD_2);
+		glMap2f(GL_MAP2_TEXTURE_COORD_2, 0, 1, 3, 4, 0, 1, 12, 6, &bakpunten[0][0][0]);
+		glEnable(GL_MAP2_TEXTURE_COORD_2);
 		glMapGrid2f(20, 0.0, 1.0, 20, 0.0, 1.0);
 		glEvalMesh2(GL_FILL, 0, 20, 0, 20);
 		if (toonmesh)
 			bakmesh();
-		//glDisable(GL_MAP2_TEXTURE_COORD_2);
+		glDisable(GL_MAP2_TEXTURE_COORD_2);
 		glDisable(GL_MAP2_VERTEX_3);
+
+    glDisable(GL_TEXTURE_2D);
 		glScalef(-1, 1, 1);
 	}
 	glPopMatrix();
@@ -433,6 +444,14 @@ void dak()
 	glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, dakD);
 	glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, dakS);
 	glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, shini);
+
+  if(textuur)
+    glEnable(GL_TEXTURE_2D);
+  glBindTexture(GL_TEXTURE_2D, textuurobject[DAKI]);
+  glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+
 	for (int i=0; i<4; i++)
 	{
 
@@ -442,8 +461,9 @@ void dak()
 		GLUnurbsObj *dakelement;
 		dakelement = gluNewNurbsRenderer();
 		gluNurbsProperty(dakelement, GLU_DISPLAY_MODE, GLU_FILL);
-	//	gluNurbsProperty(dakelement, GLU_SAMPLING_TOLERANCE, 25.0);
+		gluNurbsProperty(dakelement, GLU_SAMPLING_TOLERANCE, 25.0);
 		gluBeginSurface(dakelement);
+			gluNurbsSurface(dakelement, 8, dakknopen, 8, dakknopen, 4*3, 3, &dakpunten[0][0][0], 4, 4, GL_MAP2_TEXTURE_COORD_2);
 			gluNurbsSurface(dakelement, 8, dakknopen, 8, dakknopen, 4*3, 3, &dakpunten[0][0][0], 4, 4, GL_MAP2_VERTEX_3);
 		gluEndSurface(dakelement);
 		gluDeleteNurbsRenderer(dakelement);
@@ -451,6 +471,7 @@ void dak()
 			dakmesh();
 		glPopMatrix();
 	}
+  glDisable(GL_TEXTURE_2D);
 	glPopMatrix();
 }
 
@@ -492,6 +513,30 @@ void rad()
 	spaken();
 	schijven();
 	glPopMatrix();
+}
+
+void vloer()
+{
+  glPushMatrix();
+	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, steunbalkA);
+	glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, steunbalkD);
+	glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, steunbalkS);
+	glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, shini);
+  if(textuur)
+    glEnable(GL_TEXTURE_2D);
+  glBindTexture(GL_TEXTURE_2D, textuurobject[VLOERI]);
+  glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+
+  glBegin(GL_QUADS);
+    glTexCoord2f(0.0, 0.0); glVertex3f(-10, 0, -10);
+    glTexCoord2f(1.0, 0.0); glVertex3f( 10, 0, -10);
+    glTexCoord2f(1.0, 1.0); glVertex3f( 10, 0,  10);
+    glTexCoord2f(0.0, 1.0); glVertex3f(-10, 0,  10);
+  glEnd();
+  glDisable(GL_TEXTURE_2D);
+  glPopMatrix();
 }
 
 void assen()
@@ -593,7 +638,8 @@ void kermis()	//display functie
 	assen();
 
 	glTranslatef(0, -steunBalkLengte, 0);		//plaats de as ongeveer in het midden
-	steunBalken();
+  vloer();
+  steunBalken();
 	rad();
 	if (meerdere) {
 		glTranslatef(0.75*schijfStraal, 0, -2.5*centraleAsLengte);
@@ -678,13 +724,14 @@ void init()
 	kopierKleur(dakS, geelS);
 
 	tImageJPG *loadImage;
+  glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+  glGenTextures(AANTALAFBEELDINGEN, textuurobject);
 	for (int i=0; i<AANTALAFBEELDINGEN; i++)
 	{
 		loadImage = LoadJPG(jpgnaam[i]);
 		fprintf(stderr, "Afbeelding %s: %d x %d\n", jpgnaam[i], loadImage->sizeX, loadImage->sizeY);
 		glBindTexture(GL_TEXTURE_2D, textuurobject[i]);
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, loadImage->sizeX, loadImage->sizeY, 0, GL_RGB, GL_UNSIGNED_BYTE, loadImage->data);
-		printf("Size: %d op %d\n", loadImage->sizeX, loadImage->sizeY);
 	}
 
 	aspectratio = 1.0*winWidth/winHeight;

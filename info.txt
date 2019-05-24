@@ -1,0 +1,39 @@
+Opties:
+	-z#	# = aantal zitjes
+	-p#	# = perspectief: f(frustrum), o(ortho), p(perspective)
+	-i	extra (debug) info in terminal weergeven
+Toetsen:
+	q	sluit programma
+
+	BELICHTING:
+	a/A	lamp 0 aan/uit
+	b/B	lamp 1 aan/uit
+	c/C	lamp 2 aan/uit
+	d/D	lamp 3 aan/uit
+	e/E	shini factor groter/kleiner
+	h/H	spot hoogte groter/kleiner
+	v/V	spot hoek groter/kleiner
+	w/W	spot exponent groter/kleiner
+
+	ANIMATIE:
+	g	rad draaien aan/uit
+	G	zitje schommellen aan/uit
+
+	VISUEEL:
+	f	doorzichtig aan/uit
+	m	mist aan/uit
+	M	mist exponent groter
+	n	meerdere exemplaren aan/uit
+	s/S	shading model flat/smooth
+	t	textuur aan/uit
+	x/X	camera positie x groter/kleiner
+	y/Y	camera positie y groter/kleiner
+	z/Z	camera positie z groter/kleiner
+
+	DEBUG:
+	j	assenstelsels aan/uit
+	k	controlepunten aan/uit
+	l	mesh aan/uit
+	L	lamp posities aan/uit
+	r	reset draai en wiebel hoek
+
