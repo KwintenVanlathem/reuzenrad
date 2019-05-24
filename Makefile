@@ -12,7 +12,7 @@ LIBS = -lglut -lGLU -lGL  -lXt -lXext -lX11 -ljpeg
 
 
 SRCS = \
-	reuzenrad.c
+	reuzenrad.c InitJPG.c
 
 OBJS = $(SRCS:.c=.o)
 
