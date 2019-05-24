@@ -395,12 +395,12 @@ void bakje()
 		glEnable(GL_MAP2_TEXTURE_COORD_2);
 		glMapGrid2f(20, 0.0, 1.0, 20, 0.0, 1.0);
 		glEvalMesh2(GL_FILL, 0, 20, 0, 20);
-		if (toonmesh)
-			bakmesh();
 		glDisable(GL_MAP2_TEXTURE_COORD_2);
 		glDisable(GL_MAP2_VERTEX_3);
 
     glDisable(GL_TEXTURE_2D);
+		if (toonmesh)
+			bakmesh();
 		glScalef(-1, 1, 1);
 	}
 	glPopMatrix();
@@ -445,8 +445,6 @@ void dak()
 	glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, dakS);
 	glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, shini);
 
-  if(textuur)
-    glEnable(GL_TEXTURE_2D);
   glBindTexture(GL_TEXTURE_2D, textuurobject[DAKI]);
   glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -455,6 +453,8 @@ void dak()
 	for (int i=0; i<4; i++)
 	{
 
+      if(textuur)
+        glEnable(GL_TEXTURE_2D);
 		glRotated(90, 0, 1, 0);
 		glPushMatrix();
 		glRotated(90, -1, 0, 0);
@@ -467,11 +467,11 @@ void dak()
 			gluNurbsSurface(dakelement, 8, dakknopen, 8, dakknopen, 4*3, 3, &dakpunten[0][0][0], 4, 4, GL_MAP2_VERTEX_3);
 		gluEndSurface(dakelement);
 		gluDeleteNurbsRenderer(dakelement);
+    glDisable(GL_TEXTURE_2D);
 		if (toonmesh)
 			dakmesh();
 		glPopMatrix();
 	}
-  glDisable(GL_TEXTURE_2D);
 	glPopMatrix();
 }
 
