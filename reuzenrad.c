@@ -82,7 +82,7 @@ float wiebeldelta = 0.4;
   GLfloat aplaats[3] = {0, 0, 20};  //ambient
   GLfloat dplaats[3] = {20, 0, 0};  //diffuus
   GLfloat splaats[3] = {20, 20, -20};  //specular
-  GLfloat spplaats[3] = {0, 30, 0}; //spot
+  GLfloat spplaats[3] = {10, 10, 0}; //spot
 
   //lichtkleuren:
   GLfloat ambient[] = {1, 1, 1, 0}; //wit
