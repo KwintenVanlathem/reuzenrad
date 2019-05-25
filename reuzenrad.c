@@ -65,7 +65,7 @@
   int tijd = 10; //ms
   float animhoek = 0;
   float wiebelhoek = 0;
-  float wiebeldelta = 0.4;
+  float wiebeldelta = 0.4;  //ifv draai delta
 
 //verlichting:
   float spothoek = 60;
@@ -82,7 +82,7 @@
   GLfloat aplaats[3] = {0, 0, 20};  //ambient
   GLfloat dplaats[3] = {20, 0, 0};  //diffuus
   GLfloat splaats[3] = {20, 20, -20};  //specular
-  GLfloat spplaats[3] = {10, 10, 0}; //spot
+  GLfloat spplaats[3] = {15, 15, 0}; //spot
 
 //lichtkleuren:
   GLfloat ambient[] = {1, 1, 1, 0}; //wit
@@ -787,7 +787,7 @@ void anim(int delta)
   if (draai)
     animhoek += delta;
   if (wiebel)
-    wiebelhoek += wiebeldelta;
+    wiebelhoek += delta * wiebeldelta;
   if (animhoek > 360)
     animhoek -= 360;
   if (abs(wiebelhoek) > 25)	//max 25 graden afwijken van stilstand
@@ -877,6 +877,6 @@ int main (int argc, char* argv[])
   glutDisplayFunc(kermis);
   glutKeyboardFunc(toets);
   maakMenu();
-  glutTimerFunc(tijd, anim, 1);
+  glutTimerFunc(tijd, anim, 1); //bepaald updatesnelheid en draaistappen
   glutMainLoop();
 }
