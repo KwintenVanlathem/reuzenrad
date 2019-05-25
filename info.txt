@@ -81,14 +81,14 @@ Routines:
 	init()
 		stelt lichtkleuren in, stelt blendfunctie in, stelt beginkleuren in, laad jpg’s in
 	toets(unsigned char key, int x, int y)
-	keyboardfunctie, veranderd hele boel dingen op basis van ingedrukte toets (zie hierboven), toont eventueel controleinformatie
+		keyboardfunctie, veranderd hele boel dingen op basis van ingedrukte toets (zie hierboven), toont eventueel controleinformatie
 	anim()
-	timerfunctie, veranderd eventueel draaihoek en schommelhoek, gebruikt door rad() en zitje(), wisselt van buffer
+		timerfunctie, veranderd eventueel draaihoek en schommelhoek, gebruikt door rad() en zitje(), wisselt van buffer
 	menu()
-	past kleuren aan van zitjes onderdelen met behulp van kopierKleur(dest, src), op basis van wat er in het menu word geselecteerd
+		past kleuren aan van zitjes onderdelen met behulp van kopierKleur(dest, src), op basis van wat er in het menu word geselecteerd
 	maakMenu()
-	maakt menu met submenu’s die gebruikt worden om de zitjes onderdelen van kleur te doen veranderen met behulp van menu()
+		maakt menu met submenu’s die gebruikt worden om de zitjes onderdelen van kleur te doen veranderen met behulp van menu()
 	main(int argc, char* argv[])
-	main functie, leest argumenten in, initialiseerd openGL/GLUT, stelt displaymodus in, creert initeel venster, initialiseert alles met behulp van init(), linkt raam, kermis en toets aan hun bijhorende glut functies, maakt menu met behulp van maakMenu(), start de timerfunctie en start de openGL rendering pipeline
+		main functie, leest argumenten in, initialiseerd openGL/GLUT, stelt displaymodus in, creert initeel venster, initialiseert alles met behulp van init(), linkt raam, kermis en toets aan hun bijhorende glut functies, maakt menu met behulp van maakMenu(), start de timerfunctie en start de openGL rendering pipeline
 
 
